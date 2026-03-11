@@ -47,4 +47,15 @@ The network consists of 4 isolated subnets. Public subnets are designed for inte
 * **Name:** `aws-resume-api-igw`
 * **Purpose:** Provides inbound and outbound internet connectivity exclusively for the public subnets.
 
+## 🛡️ Security Groups
+
+The following Security Groups are configured to manage inbound and outbound traffic for the EC2 instances and resources within the network.
+
+| Security Group Name | Protocol | Port Range | Source/Destination | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **`resume-api-PassAll`** | All Traffic | All | `0.0.0.0/0` | **Testing Only:** Allows all inbound and outbound traffic. *(Note: Should be removed or restricted in production)* |
+| **`resume-api-PassSSH`** | TCP (SSH) | `22` | `Your IP` / `0.0.0.0/0` | Allows secure shell access to the instances for administration. |
+| **`resume-api-PassHTTP`** | TCP (HTTP) | `80` | `0.0.0.0/0` | Allows unencrypted web traffic to access the API or web servers. |
+
+> **⚠️ Security Note:** It is highly recommended to restrict the source IP for `resume-api-PassSSH` to your specific IP address rather than allowing `0.0.0.0/0`, and to use `resume-api-PassAll` strictly for temporary debugging purposes.
 
