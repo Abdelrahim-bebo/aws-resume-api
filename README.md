@@ -98,11 +98,11 @@ Pulled the latest application image from the registry:
 
 ```Bash
 docker pull 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest
-```
 
 docker images
 REPOSITORY                                                TAG       IMAGE ID       CREATED        SIZE
 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api   latest    7cc3bf39340d   24 hours ago   197MB
+```
 
 ### 🛡️ Security & Identity (IAM)
 Principle of Least Privilege: Created a custom IAM Instance Profile (EC2-ECR-Pull-Role) for the EC2 instance.
