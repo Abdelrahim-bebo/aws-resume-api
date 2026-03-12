@@ -99,7 +99,7 @@ Pulled the latest application image from the registry:
 ```Bash
 docker pull 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest
 ```
-```bash
+
 docker images
 REPOSITORY                                                TAG       IMAGE ID       CREATED        SIZE
 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api   latest    7cc3bf39340d   24 hours ago   197MB
