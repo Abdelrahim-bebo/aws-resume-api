@@ -59,3 +59,31 @@ The following Security Groups are configured to manage inbound and outbound traf
 
 > **⚠️ Security Note:** It is highly recommended to restrict the source IP for `resume-api-PassSSH` to your specific IP address rather than allowing `0.0.0.0/0`, and to use `resume-api-PassAll` strictly for temporary debugging purposes.
 
+## 🐳 Phase 3: Containerization (Docker & ECR)
+The application is containerized and pulled directly from Amazon Elastic Container Registry (ECR).
+
+### 1. Environment Setup
+Docker is installed and configured to run automatically on the EC2 instance:
+```bash
+sudo yum update -y
+sudo yum install docker -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+### 2. ECR Authentication
+Authenticated the Docker CLI with the AWS ECR registry:
+
+```Bash
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 422015754060.dkr.ecr.us-east-1.amazonaws.com
+```
+### 3. Image Deployment
+Pulled the latest application image from the registry:
+
+```Bash
+docker pull 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest
+```
+```bash
+docker images
+REPOSITORY                                                TAG       IMAGE ID       CREATED        SIZE
+422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api   latest    7cc3bf39340d   24 hours ago   197MB
+```
