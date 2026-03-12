@@ -72,7 +72,7 @@ The following Security Groups are configured to manage inbound and outbound traf
 > **⚠️ Security Note:** It is highly recommended to restrict the source IP for `resume-api-PassSSH` to your specific IP address rather than allowing `0.0.0.0/0`, and to use `resume-api-PassAll` strictly for temporary debugging purposes.
 
 
-```
+
 ## 🏗️ Phase 2 & 3: Infrastructure & Deployment (March 12, 2026)
 In this phase, we transitioned from local containerization to a fully functional, secure, and scalable cloud architecture on AWS.
 
