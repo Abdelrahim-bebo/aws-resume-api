@@ -56,3 +56,4 @@ The API is now live and successfully communicating with the RDS backend.
 
 Endpoint: http://3.226.253.122:8080/api/resume
 Status: Connection verified and data is being served as JSON.
+![API Results](./screenshots/cv-api-aws.png)
