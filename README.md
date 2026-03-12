@@ -22,3 +22,37 @@ A cloud-native Node.js application designed to demonstrate AWS Architecture best
 - [x] Configured AWS CLI on Ubuntu and authenticated with IAM.
 - [x] Created a Private Amazon ECR repository and successfully pushed the image.
 - [x] Set up IAM User with Administrator permissions for team collaboration.
+
+### 🏗️ Phase 2 & 3: Infrastructure & Deployment (March 12, 2026)
+In this phase, we transitioned from local containerization to a fully functional, secure, and scalable cloud architecture on AWS.
+
+## 🛡️ Security & Identity (IAM)
+Principle of Least Privilege: Created a custom IAM Instance Profile (EC2-ECR-Pull-Role) for the EC2 instance.
+
+Access Control: Attached AmazonEC2ContainerRegistryReadOnly and AmazonSSMManagedInstanceCore policies to allow the instance to pull images securely without hardcoded credentials.
+
+## 🌐 Networking & Databases (VPC & RDS)
+Database Isolation: Provisioned an Amazon RDS (MySQL) instance within Private Subnets to ensure it is not accessible from the public internet.
+
+DB Subnet Groups: Configured a custom Subnet Group spanning multiple Availability Zones (us-east-1a, us-east-1b) for High Availability.
+
+Security Group Chaining: Implemented an SG-to-SG inbound rule. The RDS Security Group only allows traffic on port 3306 from the specific Security Group ID of the EC2 instance, rather than a static IP.
+
+## 💻 Compute & Orchestration (EC2 & Docker)
+Instance Environment: Launched an Amazon Linux 2023 EC2 instance in a Public Subnet.
+
+Remote Management: Utilized EC2 Instance Connect for secure terminal access.
+
+Container Deployment:
+
+Installed and configured Docker on the Amazon Linux environment.
+
+Authenticated with Amazon ECR to pull the resume-api:latest image.
+
+Deployed the container using environment variables to securely link the application with the RDS endpoint.
+
+## 🚀 Final Result
+The API is now live and successfully communicating with the RDS backend.
+
+Endpoint: http://3.226.253.122:8080/api/resume
+Status: Connection verified and data is being served as JSON.
