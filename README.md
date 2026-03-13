@@ -182,3 +182,43 @@ To allow the client web application to securely interact with the S3 bucket (for
         "ExposeHeaders": []
     }
 ]
+```
+# 📂 Shared File Storage (Amazon EFS)
+
+## 📖 Overview
+This section documents the configuration of the Amazon Elastic File System (EFS). The EFS is provisioned to provide a centralized, highly available, and scalable shared storage solution across multiple EC2 instances within our architecture.
+
+## ⚙️ File System Configuration
+| Property | Configuration |
+| :--- | :--- |
+| **File System ID** | `[fs-0a249541bd8846a9b]` |
+| **File System Type** | Regional (Multi-AZ for high availability) |
+| **Performance Mode** | General Purpose / Bursting |
+| **Throughput Mode** | Elastic |
+| **Encryption** | Enabled (Data at rest) |
+
+## 🌐 Network Access & Mount Targets
+The EFS is securely attached to our custom VPC. Mount targets have been created in the specified subnets to allow EC2 instances to connect via the NFS protocol.
+
+* **Security Group:** `[EFS-Server]` (Must allow inbound NFS traffic on Port 2049 from the EC2 instances).
+
+## 🛠️ Mounting Instructions
+To attach the EFS to an EC2 instance, the necessary NFS utilities must be installed, and the security group must be properly configured to prevent connection timeouts.
+
+**1. Install EFS Utilities (Amazon Linux):**
+```bash
+sudo yum install -y amazon-efs-utils
+```
+**2. Create the Mount Directory:**
+```Bash
+sudo mkdir -p /mnt/efs
+```
+**3. Mount the File System:**
+(Ensure the EC2 Security Group is allowed in the EFS Inbound Rules to prevent a 15-second timeout error).
+```Bash
+sudo mount -t efs -o tls [fs-0a249541bd8846a9b]:/ /mnt/efs
+```
+**4. Verify the Mount:**
+```Bash
+df -h
+```
