@@ -76,6 +76,36 @@ The following Security Groups are configured to manage inbound and outbound traf
 ## 🏗️ Phase 2 & 3: Infrastructure & Deployment (March 12, 2026)
 In this phase, we transitioned from local containerization to a fully functional, secure, and scalable cloud architecture on AWS.
 
+# 🚀 S3 Application Integration & Deployment
+
+## 📖 Overview
+This section documents the transition of the Resume API from local file handling to a cloud-native storage solution using Amazon S3. As the DevOps Lead, I updated the application logic to support secure file uploads/downloads and managed the containerized deployment workflow via Amazon ECR and EC2.
+
+## 🛠 Environment Configuration
+To maintain security and decouple configuration from code, the following environment variables are required for the application to interact with S3.
+
+| Variable | Description | Runtime Configuration |
+| :--- | :--- | :--- |
+| S3_BUCKET_NAME | The name of the target S3 bucket | resume-api-bucket-1 |
+| AWS_REGION | The AWS region hosting the bucket | us-east-1 |
+
+## 💻 Application Logic Updates
+The API was enhanced using the AWS SDK for JavaScript (v3) and Multer for efficient multipart/form-data handling.
+
+### Key Features:
+* Secure Uploads: Files are received in memory and streamed directly to S3 via PutObjectCommand.
+* Private Access (Pre-signed URLs): Instead of making the bucket public, the API generates temporary, secure links for downloading files using getSignedUrl (valid for 1 hour).
+
+```javascript
+// Implementation snippet for S3 Upload
+const uploadParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: resumes/${Date.now()}-${file.originalname},
+    Body: file.buffer,
+    ContentType: file.mimetype,
+};
+await s3Client.send(new PutObjectCommand(uploadParams));
+
 ### Containerization to EC2 (Docker & ECR)
 The application is containerized and pulled directly from Amazon Elastic Container Registry (ECR).
 
