@@ -104,6 +104,8 @@ REPOSITORY                                                TAG       IMAGE ID    
 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api   latest    7cc3bf39340d   24 hours ago   197MB
 ```
 
+
+
 ### 🛡️ Security & Identity (IAM)
 Principle of Least Privilege: Created a custom IAM Instance Profile (EC2-ECR-Pull-Role) for the EC2 instance.
 
@@ -135,3 +137,48 @@ The API is now live and successfully communicating with the RDS backend.
 Endpoint: http://3.226.253.122:8080/api/resume
 Status: Connection verified and data is being served as JSON.
 ![API Results](./screenshots/cv-api-aws.png)
+
+
+# 🗄️ S3 Storage & CORS Configuration
+
+## 📖 Overview
+This section documents the configuration of the Amazon S3 bucket used for securely storing and managing application files (e.g., resumes). The bucket is configured with strict access controls to ensure data privacy and security.
+
+## 🪣 Bucket Details
+| Property | Configuration |
+| :--- | :--- |
+| **Bucket Name** | `resume-api-bucket-1` |
+| **AWS Region** | `us-east-1` (N. Virginia) |
+
+## 🔒 Security & Access Management
+The bucket is secured using AWS best practices to prevent unintended public exposure:
+
+* **Block Public Access:** `ON` 
+  * All public access (via ACLs, bucket policies, or access points) is completely blocked.
+* **Object Ownership:** `Bucket owner enforced` 
+  * Access Control Lists (ACLs) are disabled. All objects in this bucket are owned strictly by the AWS account. Access is managed exclusively through policies.
+## 🔄 Bucket Versioning
+* **Status:** `Enabled`
+* **Purpose:** Bucket versioning is enabled to keep multiple variants of an object in the same bucket. This acts as a backup mechanism, protecting the stored resumes against accidental overwrites or deletions, and allowing for easy recovery of previous versions.
+
+## 🌐 Cross-Origin Resource Sharing (CORS)
+To allow the client web application to securely interact with the S3 bucket (for uploading and downloading files), the following CORS policy has been applied:
+
+```json
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": []
+    }
+]
