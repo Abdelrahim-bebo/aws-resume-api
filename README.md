@@ -260,3 +260,66 @@ The ASG uses a **Target Tracking Scaling Policy** to trigger scale-out and scale
 * **Grace Period:** `300 seconds`.
 * **Scale-in Protection:** `Disabled` (Crucial for cost-saving; allows AWS to automatically terminate the extra instance once the CPU load drops below the target value).
 * **Termination Policy:** Default behavior (Terminates the oldest instance or the one closest to the next billing hour when scaling in).
+
+
+Markdown
+# 🚀 Resume API - Deployment & Infrastructure Guide
+
+This repository contains the deployment workflow, containerization details, and troubleshooting documentation for the Resume API project hosted on AWS.
+
+---
+
+## 📦 Containerization & CI/CD Workflow
+The deployment follows a professional Docker-to-ECR pipeline to ensure consistency across environments.
+
+| Step | Action | Command |
+| :--- | :--- | :--- |
+| **1** | **Local Build** | `docker build -t resume-api .` |
+| **2** | **ECR Tagging** | `docker tag resume-api:latest 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest` |
+| **3** | **Cloud Push** | `docker push 422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest` |
+
+---
+
+## 🚀 Production Deployment Command (EC2)
+To run the container on the EC2 instance, environment variables are injected at runtime to connect the API with the S3 storage layer:
+
+```bash
+docker run -d -p 8080:8080 \
+  -e S3_BUCKET_NAME=resume-api-bucket-1 \
+  -e AWS_REGION=us-east-1 \
+  [422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest](https://422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest)
+🛡️ IAM Troubleshooting & Resolution
+During the initial deployment of the updated container, a 403 AccessDenied error was captured in the Docker logs during the S3 upload process.
+
+Root Cause:
+
+The EC2 instance was associated with a restrictive role: EC2-ECR-Pull-Role.
+
+This role lacked the s3:PutObject permission required to write files to the bucket.
+
+Resolution:
+
+Collaborated with the Cloud Architect to modify the IAM Role.
+
+Attached the AmazonS3FullAccess policy to the instance role, enabling secure, credential-less communication between the EC2 and S3 services.
+
+🧪 Verification & Final Testing
+The integration was verified by executing a multipart POST request from the EC2 terminal to ensure the end-to-end flow (API -> S3) is functional.
+
+Test Command:
+
+Bash
+curl -X POST http://localhost:8080/upload-cv -F "cv=@test-cv.txt"
+Expected Output:
+
+Status: 200 OK
+
+Response Body:
+
+JSON
+{
+  "message": "File uploaded successfully! ✅",
+  "fileName": "resumes/1773411156110-test-cv.txt"
+}
+
+هل هناك أي أجزاء أخرى أو صور إضافية تود تحويلها وإضافتها لهذا الملف؟
