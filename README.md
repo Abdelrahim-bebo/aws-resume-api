@@ -288,15 +288,13 @@ docker run -d -p 8080:8080 \
   -e S3_BUCKET_NAME=resume-api-bucket-1 \
   -e AWS_REGION=us-east-1 \
   [422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest](https://422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest)
-🛡️ IAM Troubleshooting & Resolution
+```
+## 🛡️ IAM Troubleshooting & Resolution
 During the initial deployment of the updated container, a 403 AccessDenied error was captured in the Docker logs during the S3 upload process.
 
 Root Cause:
-
 The EC2 instance was associated with a restrictive role: EC2-ECR-Pull-Role.
-
 This role lacked the s3:PutObject permission required to write files to the bucket.
-
 Resolution:
 
 Collaborated with the Cloud Architect to modify the IAM Role.
@@ -308,18 +306,23 @@ The integration was verified by executing a multipart POST request from the EC2 
 
 Test Command:
 
-Bash
+```Bash
 curl -X POST http://localhost:8080/upload-cv -F "cv=@test-cv.txt"
+```
 Expected Output:
 
-Status: 200 OK
+`Status: 200 OK`
 
 Response Body:
 
-JSON
+```JSON
 {
   "message": "File uploaded successfully! ✅",
   "fileName": "resumes/1773411156110-test-cv.txt"
 }
+```
+
+
+
 
 هل هناك أي أجزاء أخرى أو صور إضافية تود تحويلها وإضافتها لهذا الملف؟
