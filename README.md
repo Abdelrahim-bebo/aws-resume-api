@@ -222,3 +222,41 @@ sudo mount -t efs -o tls [fs-0a249541bd8846a9b]:/ /mnt/efs
 ```Bash
 df -h
 ```
+
+
+
+# 📈 Auto Scaling & High Availability (ASG)
+
+## 📖 Overview
+To ensure the application remains highly available while strictly managing cloud costs (operating within the AWS Free Tier constraints), an Amazon EC2 Auto Scaling Group (ASG) has been implemented. The ASG dynamically adjusts the number of compute instances based on real-time CPU utilization, ensuring we only pay for the compute power we actually need.
+
+## ⚙️ Launch Template Configuration
+The Auto Scaling Group relies on a pre-configured Launch Template that acts as the blueprint for all newly scaled instances.
+* **Source Image:** Custom AMI (`ami-03500eeac27f0f059`) created from the configured base EC2 instance.
+* **Instance Type:** `t3.micro` .
+* **Security & Networking:** Deployed within the custom VPC and attached to the existing application Security Group.
+
+## ⚖️ Auto Scaling Group Settings
+
+### 1. Group Size & Capacity Limits
+Configured with a highly conservative approach to prevent runaway costs while ensuring baseline availability.
+| Property | Value | Purpose |
+| :--- | :--- | :--- |
+| **Desired Capacity** | `1` | Starts the environment with a single active instance. |
+| **Minimum Capacity** | `1` | Ensures the application never goes offline; replaces the instance if it fails. |
+| **Maximum Capacity** | `3` | Caps the maximum number of instances at 2 to strictly control costs during traffic spikes. |
+
+### 2. Network 
+* **Subnets:** Distributed across `[us-east-1a]` and `[us-east-1b]` for fault tolerance.
+
+### 3. Automatic Scaling Policy
+The ASG uses a **Target Tracking Scaling Policy** to trigger scale-out and scale-in events based on compute stress.
+* **Metric Type:** `Average CPU utilization`
+* **Target Value:** `70%` (If the primary instance sustains >70% CPU usage, the second instance is launched automatically).
+* **Instance Warmup:** `300 seconds` (Gives the new instance 5 minutes to boot up before CloudWatch starts tracking its metrics).
+
+### 4. Health Checks & Protection
+* **Health Check Type:** `EC2` (Monitors instance status checks).
+* **Grace Period:** `300 seconds`.
+* **Scale-in Protection:** `Disabled` (Crucial for cost-saving; allows AWS to automatically terminate the extra instance once the CPU load drops below the target value).
+* **Termination Policy:** Default behavior (Terminates the oldest instance or the one closest to the next billing hour when scaling in).
