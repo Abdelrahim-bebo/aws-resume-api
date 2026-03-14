@@ -409,3 +409,49 @@ The integration was verified by retrieving a test CV through the CloudFront doma
     Test URL: https://d1dpjnqpij8agc.cloudfront.net/resumes/test-cv.txt
     Validation Method: Browser access and curl -I to verify the X-Cache header.
     Result: X-Cache: Hit from cloudfront ✅
+
+# 🌐 Traffic Routing & Load Balancing (ALB)
+
+## 📖 Overview
+To ensure high availability and distribute incoming API traffic efficiently across our containerized EC2 instances, an **Application Load Balancer (ALB)** is deployed. The ALB acts as the single point of entry for the application, isolating the backend compute resources from direct internet access and managing instance health dynamically.
+
+## ⚙️ Load Balancer Configuration
+* **Type:** Application Load Balancer (Internet-facing)
+* **IP Address Type:** IPv4
+* **Network Mapping:** Deployed across multiple Availability Zones (`us-east-1a`, `us-east-1b`) for fault tolerance.
+* **Listeners:** * Protocol: `HTTP`
+  * Port: `80`
+  * Default Action: Forward to `resume-api-TG` (Target Group).
+
+## 🎯 Target Group & Health Checks
+The ALB routes traffic to a dynamically scaling pool of EC2 instances managed by the Auto Scaling Group (ASG). 
+
+* **Target Type:** Instances
+* **Routing Traffic Port:** `8080` (Mapped to the Node.js API container).
+* **Health Check Configuration:**
+  * Protocol: `HTTP`
+  * Path: `/`
+  * Port: `Traffic port`
+  * **Success Codes:** `200, 404` *(See Troubleshooting section below)*.
+
+## 🔒 Security & Firewall Matrix
+A strict security group hierarchy is implemented to enforce least-privilege access:
+
+| Security Group | Inbound Rule | Source | Purpose |
+| :--- | :--- | :--- | :--- |
+| **ALB-SG** | `HTTP (80)` | `0.0.0.0/0` (Internet) | Allows public web traffic to hit the Load Balancer. |
+| **EC2-ASG-SG** | `Custom TCP (8080)` | `ALB-SG` | **Crucial:** EC2 instances block all direct internet access and *only* accept traffic originating from the ALB on the application's port. |
+
+---
+
+## 🛠️ Troubleshooting & Resolution: ALB Health Check Failures
+
+During the initial integration between the ALB and the Auto Scaling Group, the EC2 targets were failing registration and marked as **`Unhealthy`**.
+
+* **Symptoms:** * Instances failed the ALB Health Checks.
+  * Target Group registered the error: `Health checks failed with these codes: [404]`.
+* **Root Cause Analysis:** * The ALB health check was pinging the root path (`/`) on port `8080`. 
+  * The Resume API application does not have a designated default route at `/` (it only listens on specific API endpoints like `/upload`). Consequently, the API correctly returned a `404 Not Found` HTTP status.
+  * By default, the ALB strictly expects a `200 OK` response to register an instance as healthy.
+* **Resolution:** * Modified the Target Group's Health Check **Success codes** to include `404` (i.e., `200, 404`). 
+  * This validates that the Node.js container is actively running and responding to HTTP requests, allowing the ALB to successfully register the instances and begin routing live traffic.
