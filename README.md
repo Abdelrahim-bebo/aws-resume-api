@@ -353,6 +353,59 @@ Response Body:
 ```
 
 
+## 🌐 CloudFront Content Delivery Network (CDN)
+📖 Overview
+In this stage, we integrated Amazon CloudFront to serve as a global distribution layer for the S3 bucket. By caching CV files at Edge Locations worldwide, we significantly reduced latency for end-users and offloaded traffic from the origin bucket.
+
+### ⚡ Distribution Configuration
+
+| Property | Configuration |
+|----------|---------------|
+| Distribution Domain | d1dpjnqpij8agc.cloudfront.net |
+| Origin Source | resume-api-bucket-1.s3.us-east-1.amazonaws.com |
+| Price Class | Use all edge locations (Best Performance) |
+| Viewer Protocol | Redirect HTTP to HTTPS |
 
 
-هل هناك أي أجزاء أخرى أو صور إضافية تود تحويلها وإضافتها لهذا الملف؟
+### 🔒 Security & Origin Access Control (OAC)
+To ensure the S3 bucket remains private and secure, we implemented Origin Access Control (OAC). This prevents users from bypassing the CDN and accessing S3 directly.
+
+    Access Restricted: S3 public access is completely blocked.
+    Authentication: CloudFront signs every request to the S3 bucket using the OAC setting.
+    Bucket Policy Update: The S3 bucket policy was updated to explicitly allow the CloudFront Service Principal to perform s3:GetObject.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": {
+        "Sid": "AllowCloudFrontServicePrincipalReadOnly",
+        "Effect": "Allow",
+        "Principal": {
+            "Service": "cloudfront.amazonaws.com"
+        },
+        "Action": "s3:GetObject",
+        "Resource": "arn:aws:s3:::resume-api-bucket-1/*",
+        "Condition": {
+            "StringEquals": {
+                "AWS:SourceArn": "arn:aws:cloudfront::422015754060:distribution/E3B5V1ZT4YXM2D"
+            }
+        }
+    }
+}
+```
+
+### 🚀 Performance & Latency Optimization
+#### 💨 Global Caching (CDN)
+By leveraging CloudFront, the application now benefits from:
+
+    Lower Latency: Files are served from the nearest geographic Edge Location.
+    Reduced S3 Costs: Frequent requests are served from the cache, reducing S3 GET request charges.
+    Invalidation Logic: Used /* invalidation paths to clear outdated cache when CVs are updated.
+
+
+### 🧪 Final Validation & Testing
+The integration was verified by retrieving a test CV through the CloudFront domain instead of the direct S3 URL.
+
+    Test URL: https://d1dpjnqpij8agc.cloudfront.net/resumes/test-cv.txt
+    Validation Method: Browser access and curl -I to verify the X-Cache header.
+    Result: X-Cache: Hit from cloudfront ✅
