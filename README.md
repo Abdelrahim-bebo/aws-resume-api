@@ -455,3 +455,91 @@ During the initial integration between the ALB and the Auto Scaling Group, the E
   * By default, the ALB strictly expects a `200 OK` response to register an instance as healthy.
 * **Resolution:** * Modified the Target Group's Health Check **Success codes** to include `404` (i.e., `200, 404`). 
   * This validates that the Node.js container is actively running and responding to HTTP requests, allowing the ALB to successfully register the instances and begin routing live traffic.
+
+# 🚀 AWS Lambda & SNS Integration: Task Notifications
+
+## 📋 Overview
+This project implements an automated email notification system using **Amazon SNS (Simple Notification Service)** and **AWS Lambda**. When the Lambda function successfully finishes processing a task, it publishes a message to an SNS topic, which instantly delivers a formatted success email to subscribed users.
+
+## 🏗️ Architecture
+* **AWS Lambda:** Executes the main processing logic. Upon success, it uses the AWS SDK to publish a message.
+* **Amazon SNS:** Acts as the messaging hub. It receives the payload from Lambda and broadcasts it to verified email subscribers.
+* **AWS IAM:** Provides the necessary security roles, granting Lambda the `sns:Publish` permission.
+
+
+---
+
+## 🚀 Setup Instructions
+
+### 1. Create the SNS Topic
+1. Go to the **Amazon SNS** console.
+2. Navigate to **Topics** -> **Create topic**.
+3. Select **Standard** type (required for email delivery).
+4. Name the topic (e.g., `Task-Notifications`).
+5. Click **Create topic**.
+6. **Save the Topic ARN** (e.g., `arn:aws:sns:us-east-1:123456789012:Task-Notifications`) for the Lambda configuration.
+
+### 2. Configure Email Subscription
+1. In your new Topic page, go to the **Subscriptions** tab.
+2. Click **Create subscription**.
+3. Set Protocol to **Email** and enter the destination email address in the Endpoint field.
+4. Click **Create subscription**.
+5. **Verify:** Check the inbox of the provided email and click **Confirm subscription** in the automated email from AWS.
+
+### 3. Grant IAM Permissions to Lambda
+1. Go to the **AWS Lambda** console and open your function.
+2. Navigate to **Configuration** -> **Permissions**.
+3. Click the IAM Role link under **Execution role**.
+4. In IAM, click **Add permissions** -> **Attach policies**.
+5. Search for and attach `AmazonSNSFullAccess`. *(Note: For production, use a custom policy restricted to `sns:Publish` for your specific Topic ARN).*
+
+### 4. Deploy the Lambda Code
+Update your Lambda function to include the SNS publishing logic. 
+
+**Runtime:** Node.js 18.x or higher (AWS SDK v3)
+
+```javascript
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
+// Initialize SNS Client
+const snsClient = new SNSClient({ region: "us-east-1" });
+
+export const handler = async (event) => {
+  console.log("Processing started...");
+
+  try {
+    // 1. Prepare SNS Message Parameters
+    const params = {
+      TopicArn: "YOUR_TOPIC_ARN_HERE", // ⚠️ Replace with your exact Topic ARN
+      Message: "Hello! The Lambda function has successfully finished processing the task.",
+      Subject: "Task Success Notification"
+    };
+
+    // 2. Publish to SNS
+    await snsClient.send(new PublishCommand(params));
+    console.log("Notification sent successfully!");
+
+    // 3. Return Success
+    return {
+      statusCode: 200,
+      body: JSON.stringify('Task completed and email sent.'),
+    };
+
+  } catch (error) {
+    console.error("Error sending SNS notification:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify('An error occurred during notification delivery.'),
+    };
+  }
+};
+```
+
+## Summary & Workflow Conclusion
+By implementing this architecture, the system guarantees a fully automated notification pipeline. Every single time the Lambda function successfully finishes its assigned data processing or task, an email is instantly triggered and sent to the administrator or user. This eliminates the need for manual monitoring; if the process ends, the email is sent, ensuring stakeholders are always kept up to date with the system's real-time performance.
+
+
+
+
+
+
