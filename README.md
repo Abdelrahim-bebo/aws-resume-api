@@ -456,6 +456,58 @@ During the initial integration between the ALB and the Auto Scaling Group, the E
 * **Resolution:** * Modified the Target Group's Health Check **Success codes** to include `404` (i.e., `200, 404`). 
   * This validates that the Node.js container is actively running and responding to HTTP requests, allowing the ALB to successfully register the instances and begin routing live traffic.
 
+# ⚙️ Day 7: Serverless Event-Driven Processing
+## 📖 Overview
+In this stage, we decoupled the application using a Producer/Consumer pattern. Instead of the S3 bucket triggering the Lambda directly, we introduced Amazon SQS as a message broker to ensure reliability and scalability.
+
+## 🏗️ Architecture Flow
+* **S3 Bucket**: Detects a new upload in the resumes/ folder.
+* **Event Notification**: S3 sends a message to the SQS Queue.
+* **Amazon SQS**: Holds the message until the Lambda is ready to process.
+* **AWS Lambda**: Triggered by SQS, parses the event, and logs the file metadata.
+
+## 🛠️ Infrastructure Configuration (Architect Tasks)
+### 1. SQS Queue Setup
+
+| Property    | Value                |
+|--------------|----------------------|
+| Queue Name   | CV-Processing-Queue  |
+| Type         | Standard             |
+| Region       | us-east-1            |
+
+### 2. SQS Access Policy (Allowing S3)
+To allow S3 to send messages to the queue, the following policy was attached:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "s3.amazonaws.com" },
+      "Action": "sqs:SendMessage",
+      "Resource": "arn:aws:sqs:us-east-1:422015754060:CV-Processing-Queue",
+      "Condition": {
+        "ArnLike": { "aws:SourceArn": "arn:aws:s3:::resume-api-bucket-1" }
+      }
+    }
+  ]
+}
+```
+## 🚀 DevOps & Implementation Fixes
+### 🛡️ IAM Policy Resolution
+During the SQS-Lambda integration, the Lambda function was unable to poll messages. This was resolved by adding an Inline Policy to the Lambda's IAM Role:
+
+* **Policy Name**: SQS-CV-Processor-SQS-Access
+* **Actions**: sqs:ReceiveMessage, sqs:DeleteMessage, sqs:GetQueueAttributes
+
+### 🧪 Validation (CloudWatch Logs)
+The end-to-end flow was verified by checking **CloudWatch Logs.**
+
+* **Status**: Success ✅
+* **Billed Duration**: 150 ms
+* **Execution Status**: Lambda invoked correctly via SQS trigger.
+
 # 🚀 AWS Lambda & SNS Integration: Task Notifications
 
 ## 📋 Overview
