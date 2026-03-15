@@ -595,4 +595,20 @@ By implementing this architecture, the system guarantees a fully automated notif
 
 
 
+## 🚀 Phase 3: Live Application Deployment (Production-Ready)
 
+### 💻 The Professional Frontend
+After refactoring the `app.js`, we successfully deployed a polished, professional Bootstrap-based landing page for the Resume API. This demonstrates not only the backend capabilities but also a full cloud-native user experience.
+
+#### **Screenshot of the live application:**
+![Resume API Live Frontend](./screenshots/cv-api-aws.png)  
+
+**Features of the Frontend:**
+- **Status Dashboard:** A clean, visually appealing summary of the core AWS services (S3, EFS, ECR, ALB, CloudWatch).
+- **Service Status:** Real-time visual confirmation that the system is **`Operational`** (healthy on Port 80, resolving the previous 404 issue).
+- **API Endpoints:** Clearly listed endpoints for easy user navigation and testing.
+
+### 🏁 Infrastructure & Deployment Workflow Summary
+- **Dockerized Base:** The production-ready Image (`422015754060.dkr.ecr.us-east-1.amazonaws.com/resume-api:latest`) was built and pushed to **Amazon ECR**.
+- **EC2 Instance (Live Target):** The image was pulled to the EC2 instance using the secured **IAM Role** authentication, replacing the old container.
+- **ALB Health (200 OK):** The Application Load Balancer confirmed the targets are healthy, validated by a clean **HTTP 200** status code from the new landing page.
