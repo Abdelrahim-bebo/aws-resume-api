@@ -587,6 +587,9 @@ export const handler = async (event) => {
 };
 ```
 
+#### **📍 SNS Notification System in Action:**
+![SNS Email Notification](./screenshots/sns.jpg)
+
 ## Summary & Workflow Conclusion
 By implementing this architecture, the system guarantees a fully automated notification pipeline. Every single time the Lambda function successfully finishes its assigned data processing or task, an email is instantly triggered and sent to the administrator or user. This eliminates the need for manual monitoring; if the process ends, the email is sent, ensuring stakeholders are always kept up to date with the system's real-time performance.
 
