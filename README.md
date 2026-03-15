@@ -600,8 +600,158 @@ By implementing this architecture, the system guarantees a fully automated notif
 ### 💻 The Professional Frontend
 After refactoring the `app.js`, we successfully deployed a polished, professional Bootstrap-based landing page for the Resume API. This demonstrates not only the backend capabilities but also a full cloud-native user experience.
 
+## 💻 Application Source Code (Node.js & Express)
+The core logic of the Resume API is built using **Node.js** and **Express.js**. It serves as the bridge between the end-user and the AWS infrastructure, handling file uploads to S3 and providing a professional interface for monitoring and health checks.
+### `app.js`
+
+```javascript
+const express = require('express');
+const multer = require('multer');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const dotenv = require('dotenv');
+
+// Load environment variables for security and portability
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 8080;
+
+// AWS S3 Configuration
+const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+
+// Multer memory storage: Handles file buffer without writing to local disk (Cloud-Native approach)
+const upload = multer({ storage: multer.memoryStorage() });
+
+/**
+ * 🏠 Route: Home Page (The Professional Frontend)
+ * Serves a Bootstrap-based UI to demonstrate the system status.
+ * Returns HTTP 200 OK to satisfy the Application Load Balancer (ALB) Health Checks.
+ */
+app.get('/', (req, res) => {
+    res.status(200).send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Resume API - Cloud Native Architecture</title>
+            <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
+            <style>
+                body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+                .hero-section { background: linear-gradient(135deg, #232f3e 0%, #37475a 100%); color: white; padding: 60px 0; border-bottom: 5px solid #ff9900; }
+                .card { border: none; transition: transform 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .card:hover { transform: translateY(-5px); }
+                .status-badge { background-color: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
+            </style>
+        </head>
+        <body>
+            <div class="hero-section text-center">
+                <div class="container">
+                    <h1 class="display-4 fw-bold">🚀 Scalable Resume API</h1>
+                    <p class="lead mb-4">A high-performance, event-driven architecture built on AWS</p>
+                    <span class="status-badge">● System Operational</span>
+                </div>
+            </div>
+
+            <div class="container my-5">
+                <div class="row g-4 text-center">
+                    <div class="col-md-4">
+                        <div class="card h-100 p-4">
+                            <div class="fs-1 mb-3">📂</div>
+                            <h3>S3 Storage</h3>
+                            <p class="text-muted">Resumes are stored with 99.999999999% durability using private buckets and OAC security.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 p-4">
+                            <div class="fs-1 mb-3">⚡</div>
+                            <h3>Event Driven</h3>
+                            <p class="text-muted">Real-time processing via SQS and Lambda triggers for automated notifications.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 p-4">
+                            <div class="fs-1 mb-3">🌐</div>
+                            <h3>Global CDN</h3>
+                            <p class="text-muted">Content delivered via CloudFront edge locations to minimize latency for global users.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 p-4 bg-white rounded shadow-sm border text-start">
+                    <h4 class="border-bottom pb-3 mb-4">🔗 Available API Endpoints</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>GET</code></td><td><code>/</code></td><td>Main landing page (ALB Health Check)</td></tr>
+                                <tr><td><code>GET</code></td><td><code>/health</code></td><td>System health status (JSON)</td></tr>
+                                <tr><td><code>POST</code></td><td><code>/upload-cv</code></td><td>Upload PDF/Text resume directly to S3</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="text-center text-muted py-4 mt-5 border-top">
+                <p>Built with ❤️ by <strong>Bebo & Team</strong> | AWS Cloud Architect Project 2026</p>
+            </footer>
+        </body>
+        </html>
+    `);
+});
+
+/**
+ * 🏥 Route: Health Check
+ * Dedicated endpoint for AWS CloudWatch and ALB monitoring.
+ */
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'Healthy', 
+        region: process.env.AWS_REGION,
+        uptime: process.uptime() 
+    });
+});
+
+/**
+ * 📤 Route: Upload CV to S3
+ * Streams the multipart file to the configured S3 bucket using AWS SDK v3.
+ */
+app.post('/upload-cv', upload.single('cv'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded. Please use "cv" field.' });
+        }
+
+        const fileKey = `resumes/${Date.now()}-${req.file.originalname}`;
+        const uploadParams = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: fileKey,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype,
+        };
+
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        res.status(200).json({
+            message: "File uploaded successfully! ✅",
+            fileName: fileKey,
+            bucket: process.env.S3_BUCKET_NAME
+        });
+    } catch (error) {
+        console.error("S3 Upload Error:", error);
+        res.status(500).json({ error: 'Internal Server Error during file upload.' });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`🚀 Server is running on port ${port}`);
+});
+```
+
 #### **Screenshot of the live application:**
-![Resume API Live Frontend](./screenshots/cv-api-aws.png)  
+![Resume API Live Frontend](./screenshots/app-test.png)  
 
 **Features of the Frontend:**
 - **Status Dashboard:** A clean, visually appealing summary of the core AWS services (S3, EFS, ECR, ALB, CloudWatch).
