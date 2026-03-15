@@ -562,7 +562,7 @@ export const handler = async (event) => {
   try {
     // 1. Prepare SNS Message Parameters
     const params = {
-      TopicArn: "YOUR_TOPIC_ARN_HERE", // ⚠️ Replace with your exact Topic ARN
+      TopicArn: "arn:aws:sns:us-east-1:422015754060:Task-Notifications"
       Message: "Hello! The Lambda function has successfully finished processing the task.",
       Subject: "Task Success Notification"
     };
@@ -589,6 +589,7 @@ export const handler = async (event) => {
 
 ## Summary & Workflow Conclusion
 By implementing this architecture, the system guarantees a fully automated notification pipeline. Every single time the Lambda function successfully finishes its assigned data processing or task, an email is instantly triggered and sent to the administrator or user. This eliminates the need for manual monitoring; if the process ends, the email is sent, ensuring stakeholders are always kept up to date with the system's real-time performance.
+
 
 
 
