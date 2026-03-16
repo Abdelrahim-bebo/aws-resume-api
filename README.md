@@ -876,3 +876,7 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 ```
+
+
+# The WorkFlow of the Project
+![Project Architecture Flow](./screenshots/aws_resume_api.gif)
