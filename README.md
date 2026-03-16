@@ -879,4 +879,4 @@ jobs:
 
 
 # The WorkFlow of the Project
-![Project Architecture Flow](./screenshots/aws_resume_api.gif)
+![Project Architecture Flow](./screenshots/aws_resume_project.gif)
