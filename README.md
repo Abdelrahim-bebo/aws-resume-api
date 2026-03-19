@@ -2,6 +2,9 @@
 
 A cloud-native Node.js application designed to demonstrate AWS Architecture best practices, including Containerization, VPC Networking, and RDS integration. This project is part of my journey towards the **AWS Solutions Architect Associate (SAA)** certification.
 
+# The WorkFlow of the Project
+![Project Architecture Flow](./screenshots/aws_resume_project.gif)
+
 ## 🏗 Architecture Overview
 - **Compute:** Amazon EC2 (Dockerized Node.js App)
 - **Registry:** Amazon ECR (Private Repository)
@@ -878,5 +881,3 @@ jobs:
 ```
 
 
-# The WorkFlow of the Project
-![Project Architecture Flow](./screenshots/aws_resume_project.gif)
